@@ -1,5 +1,6 @@
 import MicRecorder from "mic-recorder-to-mp3"
 import { useEffect, useState, useRef } from "react"
+import { FallingLines } from "react-loader-spinner"
 const axios = require("axios")
 const APIKey = process.env.REACT_APP_API_KEY
 
@@ -64,6 +65,7 @@ const App = () => {
   const [transcriptID, setTranscriptID] = useState("")
   const [transcriptData, setTranscriptData] = useState("")
   const [transcript, setTranscript] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     if (audioFile) {
@@ -85,18 +87,45 @@ const App = () => {
       .catch((err) => console.error(err))
   }
 
-  const checkStatusHandler = () => {
+  // const checkStatusHandler = () => {
+  //   console.log(`checkStatusHandler -> uploadURL: ${uploadURL}`)
+  //   assemblyAI
+  //     .get(`/transcript/${transcriptID}`)
+  //     .then((res) => setTranscriptData(res.data))
+  //     .catch((err) => console.error(err))
+  // }
+
+  const checkStatusHandler = async () => {
+    setIsLoading(true)
     console.log(`checkStatusHandler -> uploadURL: ${uploadURL}`)
-    assemblyAI
-      .get(`/transcript/${transcriptID}`)
-      .then((res) => setTranscriptData(res.data))
-      .catch((err) => console.error(err))
+
+    try {
+      await assemblyAI.get(`/transcript/${transcriptID}`).then((res) => {
+        setTranscriptData(res.data)
+      })
+    } catch (err) {
+      console.error(err)
+    }
   }
 
+  // useEffect(() => {
+
+  // }, [transcriptData])
+
   useEffect(() => {
-    if (transcriptData.status === "completed") {
-      setTranscript(transcriptData.text)
-    }
+    const interval = setInterval(() => {
+      if (transcriptData.status !== "completed" && isLoading) {
+        checkStatusHandler()
+
+        console.log(isLoading)
+      } else {
+        setIsLoading(false)
+        setTranscript(transcriptData.text)
+        console.log(isLoading)
+        clearInterval(interval)
+      }
+    }, 1000)
+    return () => clearInterval(interval)
   }, [transcriptData])
 
   return (
@@ -117,8 +146,19 @@ const App = () => {
         Submit for Transcription
       </button>
       <button onClick={checkStatusHandler}>Check Status</button>
-      {transcriptData && <p>{transcriptData.status}</p>}
-      {transcript && <h2>{transcript}</h2>}
+      <div>
+        {isLoading ? (
+          <FallingLines width='110' color='#c8553d' />
+        ) : (
+          <h2>{transcript}</h2>
+        )}
+      </div>
+      {/* {transcriptData && (
+        <p>
+          {transcriptData.status} 
+        </p>
+      )}
+      {transcript && } */}
     </div>
   )
 }
