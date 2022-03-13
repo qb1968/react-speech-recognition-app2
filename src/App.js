@@ -148,17 +148,16 @@ const App = () => {
       <button onClick={checkStatusHandler}>Check Status</button>
       <div>
         {isLoading ? (
-          <FallingLines width='110' color='#c8553d' />
+          <div>
+            <FallingLines width='110' color='#c8553d' />
+            <p>Is loading....</p>
+          </div>
         ) : (
-          <h2>{transcript}</h2>
+          <div>
+            <h2>{transcript}</h2>
+          </div>
         )}
       </div>
-      {/* {transcriptData && (
-        <p>
-          {transcriptData.status} 
-        </p>
-      )}
-      {transcript && } */}
     </div>
   )
 }
