@@ -5,8 +5,17 @@ import logo from "./logo.png"
 const axios = require("axios")
 const APIKey = process.env.REACT_APP_API_KEY
 
-const App = () => {
+// Set Assembly AI Axios Header
+const assemblyAI = axios.create({
+  baseURL: "https://api.assemblyai.com/v2",
+  headers: {
+    authorization: APIKey,
+    "content-type": "application/json",
+    "transfer-encoding": "chunked",
+  },
+})
 
+const App = () => {
   // Mic-Recorder-To-MP3
   const recorder = useRef(null) //Recorder
   const audioPlayer = useRef(null) //Ref for the HTML Audio Tag
@@ -44,16 +53,6 @@ const App = () => {
   }
 
   // Assembly AI
-
-  // Set Assembly AI Axios Header
-  const assemblyAI = axios.create({
-    baseURL: "https://api.assemblyai.com/v2",
-    headers: {
-      authorization: APIKey,
-      "content-type": "application/json",
-      "transfer-encoding": "chunked",
-    },
-  })
 
   // States
   const [uploadURL, setUploadURL] = useState("")
@@ -111,7 +110,7 @@ const App = () => {
       }
     }, 1000)
     return () => clearInterval(interval)
-  }, [transcriptData, isLoading])
+  }, )
 
   return (
     <div className='flex flex-col justify-center items-center space-y-4 mt-10 mb-20'>
