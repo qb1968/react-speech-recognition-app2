@@ -1,28 +1,27 @@
 import MicRecorder from "mic-recorder-to-mp3"
 import { useEffect, useState, useRef } from "react"
+import { Oval } from "react-loader-spinner"
 const axios = require("axios")
 const APIKey = process.env.REACT_APP_API_KEY
 
 const App = () => {
-  // Mic-Recorder-To-MP3 Stuff
-  const recorder = useRef(null) //Recorder
-  const audioPlayer = useRef(null) //Ref for HTML Audio tag
+  // Mic-Recorder-To-MP3
 
+  const recorder = useRef(null) //Recorder
+  const audioPlayer = useRef(null) //Ref for the HTML Audio Tag
   const [blobURL, setBlobUrl] = useState(null)
   const [audioFile, setAudioFile] = useState(null)
   const [isRecording, setIsRecording] = useState(null)
-  const [play, setPlay] = useState(false)
 
   useEffect(() => {
-    //Declares the recorder object and stores it in ref
+    //Declares the recorder object and stores it inside of ref
     recorder.current = new MicRecorder({ bitRate: 128 })
   }, [])
 
   const startRecording = () => {
-    //start() returns a promise incase if audio is not blocked by browser
+    // Check if recording isn't blocked by browser
     recorder.current.start().then(() => {
       setIsRecording(true)
-      console.log(`Start Recording...`)
     })
   }
 
@@ -39,18 +38,13 @@ const App = () => {
         setBlobUrl(newBlobUrl)
         setIsRecording(false)
         setAudioFile(file)
-        console.log(`Stop Recording...`)
       })
       .catch((e) => console.log(e))
   }
 
-  useEffect(() => {
-    if (audioFile) {
-      console.log(audioFile)
-    }
-  }, [audioFile])
+  // Assembly AI
 
-  // Assembly AI Stuff
+  // Set Assembly AI Axios Header
   const assemblyAI = axios.create({
     baseURL: "https://api.assemblyai.com/v2",
     headers: {
@@ -60,14 +54,16 @@ const App = () => {
     },
   })
 
+  // States
   const [uploadURL, setUploadURL] = useState("")
   const [transcriptID, setTranscriptID] = useState("")
   const [transcriptData, setTranscriptData] = useState("")
   const [transcript, setTranscript] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
 
+  // Upload the Audio File and retrieve the Upload URL
   useEffect(() => {
     if (audioFile) {
-      console.log("/upload")
       assemblyAI
         .post("/upload", audioFile)
         .then((res) => setUploadURL(res.data.upload_url))
@@ -75,29 +71,46 @@ const App = () => {
     }
   }, [audioFile])
 
+  // Submit the Upload URL to Assembly AI and retrieve the Transcript ID
   const submitTranscriptionHandler = () => {
-    console.log(`submitTranscriptionHandler -> send uploadURL: ${uploadURL}`)
     assemblyAI
       .post("/transcript", {
         audio_url: uploadURL,
       })
-      .then((res) => setTranscriptID(res.data.id))
+      .then((res) => {
+        setTranscriptID(res.data.id)
+
+        checkStatusHandler()
+      })
       .catch((err) => console.error(err))
   }
 
-  const checkStatusHandler = () => {
-    console.log(`checkStatusHandler -> uploadURL: ${uploadURL}`)
-    assemblyAI
-      .get(`/transcript/${transcriptID}`)
-      .then((res) => setTranscriptData(res.data))
-      .catch((err) => console.error(err))
-  }
-
-  useEffect(() => {
-    if (transcriptData.status === "completed") {
-      setTranscript(transcriptData.text)
+  // Check the status of the Transcript
+  const checkStatusHandler = async () => {
+    setIsLoading(true)
+    try {
+      await assemblyAI.get(`/transcript/${transcriptID}`).then((res) => {
+        setTranscriptData(res.data)
+      })
+    } catch (err) {
+      console.error(err)
     }
-  }, [transcriptData])
+  }
+
+  // Periodically check the status of the Transcript
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (transcriptData.status !== "completed" && isLoading) {
+        checkStatusHandler()
+      } else {
+        setIsLoading(false)
+        setTranscript(transcriptData.text)
+
+        clearInterval(interval)
+      }
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [transcriptData, isLoading])
 
   return (
     <div>
@@ -107,18 +120,29 @@ const App = () => {
       <button onClick={stopRecording} disabled={!isRecording}>
         Stop
       </button>
-      <audio
-        ref={audioPlayer}
-        src={blobURL}
-        controls='controls'
-        onEnded={() => setPlay(false)} //event handler when audio has stopped playing
-      />
+      <audio ref={audioPlayer} src={blobURL} controls='controls' />
       <button onClick={submitTranscriptionHandler}>
         Submit for Transcription
       </button>
-      <button onClick={checkStatusHandler}>Check Status</button>
-      {transcriptData && <p>{transcriptData.status}</p>}
-      {transcript && <h2>{transcript}</h2>}
+      <div>
+        {isLoading ? (
+          <div>
+            <Oval
+              ariaLabel='loading-indicator'
+              height={100}
+              width={100}
+              strokeWidth={5}
+              color='red'
+              secondaryColor='yellow'
+            />
+            <p>Is loading....</p>
+          </div>
+        ) : (
+          <div>
+            <h2>{transcript}</h2>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
