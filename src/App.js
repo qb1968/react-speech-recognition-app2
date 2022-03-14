@@ -1,12 +1,13 @@
 import MicRecorder from "mic-recorder-to-mp3"
 import { useEffect, useState, useRef } from "react"
 import { Oval } from "react-loader-spinner"
+import logo from "./logo.png"
 const axios = require("axios")
 const APIKey = process.env.REACT_APP_API_KEY
 
 const App = () => {
-  // Mic-Recorder-To-MP3
 
+  // Mic-Recorder-To-MP3
   const recorder = useRef(null) //Recorder
   const audioPlayer = useRef(null) //Ref for the HTML Audio Tag
   const [blobURL, setBlobUrl] = useState(null)
@@ -113,36 +114,64 @@ const App = () => {
   }, [transcriptData, isLoading])
 
   return (
-    <div>
-      <button onClick={startRecording} disabled={isRecording}>
-        Record
-      </button>
-      <button onClick={stopRecording} disabled={!isRecording}>
-        Stop
-      </button>
+    <div className='flex flex-col justify-center items-center space-y-4 mt-10 mb-20'>
+      <h1 className='text-4xl'>React Speech Recognition App 🎧</h1>
+      <h3 className='text-2xl'>
+        Powered by{" "}
+        <a
+          className='text-secondary animate-pulse'
+          href='https://www.assemblyai.com/'
+          target='_blank'
+          rel='noreferrer'
+        >
+          AssemblyAI
+        </a>
+      </h3>
+      <img className='max-h-64' src={logo} alt='logo' />
+      <div>
+        <button
+          className='btn btn-primary'
+          onClick={startRecording}
+          disabled={isRecording}
+        >
+          Record
+        </button>
+        <button
+          className='btn btn-warning'
+          onClick={stopRecording}
+          disabled={!isRecording}
+        >
+          Stop
+        </button>
+      </div>
       <audio ref={audioPlayer} src={blobURL} controls='controls' />
-      <button onClick={submitTranscriptionHandler}>
+      <button
+        className='btn btn-secondary'
+        onClick={submitTranscriptionHandler}
+      >
         Submit for Transcription
       </button>
-      <div>
-        {isLoading ? (
-          <div>
-            <Oval
-              ariaLabel='loading-indicator'
-              height={100}
-              width={100}
-              strokeWidth={5}
-              color='red'
-              secondaryColor='yellow'
-            />
-            <p>Is loading....</p>
-          </div>
-        ) : (
-          <div>
-            <h2>{transcript}</h2>
-          </div>
-        )}
-      </div>
+
+      {isLoading ? (
+        <div>
+          <Oval
+            ariaLabel='loading-indicator'
+            height={100}
+            width={100}
+            strokeWidth={5}
+            color='red'
+            secondaryColor='yellow'
+          />
+          <p className='text-center'>Is loading....</p>
+        </div>
+      ) : (
+        <div></div>
+      )}
+      {!isLoading && transcript && (
+        <div className='w-2/3 lg:w-1/3 mockup-code'>
+          <p className='p-6'>{transcript}</p>
+        </div>
+      )}
     </div>
   )
 }
