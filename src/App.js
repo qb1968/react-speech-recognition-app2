@@ -2,10 +2,10 @@ import MicRecorder from "mic-recorder-to-mp3"
 import { useEffect, useState, useRef } from "react"
 import { Oval } from "react-loader-spinner"
 import logo from "./logo.png"
-const axios = require("axios")
+import axios from "axios"
 const APIKey = process.env.REACT_APP_API_KEY
 
-// Set Assembly AI Axios Header
+// Set AssemblyAI Axios Header
 const assemblyAI = axios.create({
   baseURL: "https://api.assemblyai.com/v2",
   headers: {
@@ -52,7 +52,7 @@ const App = () => {
       .catch((e) => console.log(e))
   }
 
-  // Assembly AI
+  // AssemblyAI
 
   // States
   const [uploadURL, setUploadURL] = useState("")
@@ -71,7 +71,7 @@ const App = () => {
     }
   }, [audioFile])
 
-  // Submit the Upload URL to Assembly AI and retrieve the Transcript ID
+  // Submit the Upload URL to AssemblyAI and retrieve the Transcript ID
   const submitTranscriptionHandler = () => {
     assemblyAI
       .post("/transcript", {
@@ -110,10 +110,10 @@ const App = () => {
       }
     }, 1000)
     return () => clearInterval(interval)
-  }, )
+  })
 
   return (
-    <div className='flex flex-col justify-center items-center space-y-4 mt-10 mb-20'>
+    <div className='flex flex-col items-center justify-center mt-10 mb-20 space-y-4'>
       <h1 className='text-4xl'>React Speech Recognition App 🎧</h1>
       <h3 className='text-2xl'>
         Powered by{" "}
