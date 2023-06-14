@@ -114,7 +114,7 @@ const App = () => {
 
   return (
     <div className='flex flex-col items-center justify-center mt-10 mb-20 space-y-4'>
-      <h1 className='text-4xl'>React Speech Recognition App 🎧</h1>
+      <h1 className='text-4xl'>MySecretary 🎧</h1>
       <h3 className='text-2xl'>
         Powered by{" "}
         <a
